@@ -25,7 +25,7 @@ Deployment: AWS / Vercel / Netlify (TBD)
 bash
 Copy
 Edit
-git clone https://github.com/yourusername/IdeaConnect.git
+git clone https://github.com/ashish787898/StartUpLink.git
 cd IdeaConnect
 2️⃣ Install dependencies
 bash
