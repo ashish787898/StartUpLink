@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Your Idea</title>
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Submit Your Startup Idea</h2>
+        <input type="text" id="ideaTitle" placeholder="Title" required>
+        <textarea id="ideaDescription" placeholder="Description" required></textarea>
+        <input type="number" id="expectedAmount" placeholder="Expected Investment Amount" required>
+        <input type="text" id="industry" placeholder="Industry Type" required>
+        <input type="email" id="ideaEmail" placeholder="Your Email" required>
+        <input type="tel" id="ideaPhone" placeholder="Your Phone (Optional)">
+        <button onclick="submitIdea()">Submit Idea</button>
+    </div>
+    
+    <h2>Submitted Ideas</h2>
+    <div id="ideasList" class="ideas-grid"></div>
+    
+    <div id="ideaModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle"></h3>
+            <p id="modalDescription"></p>
+            <p><strong>Investment:</strong> $<span id="modalInvestment"></span></p>
+            <p><strong>Industry:</strong> <span id="modalIndustry"></span></p>
+            <p><strong>Submitted On:</strong> <span id="modalDate"></span></p>
+            <a id="modalEmail" class="contact-btn">Gmail</a>
+            <a id="modalWhatsApp" class="whatsapp-btn">WhatsApp</a>
+        </div>
+    </div>
+    
+    <script>
+        function submitIdea() {
+            const title = document.getElementById("ideaTitle").value;
+            const description = document.getElementById("ideaDescription").value;
+            const expectedAmount = document.getElementById("expectedAmount").value;
+            const industry = document.getElementById("industry").value;
+            const email = document.getElementById("ideaEmail").value;
+            const phone = document.getElementById("ideaPhone").value;
+
+            fetch("/submit", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, description, expectedAmount, industry, email, phone }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                fetchIdeas();
+            })
+            .catch(error => console.error("Error submitting idea:", error));
+        }
+
+        function fetchIdeas() {
+            fetch("/api/ideas")
+            .then(response => response.json())
+            .then(ideas => {
+                const ideasList = document.getElementById("ideasList");
+                ideasList.innerHTML = "";
+
+                ideas.forEach(idea => {
+                    const ideaCard = document.createElement("div");
+                    ideaCard.classList.add("idea-card");
+                    ideaCard.innerHTML = `
+                        <div class="avatar">${idea.email.charAt(0).toUpperCase()}</div>
+                        <div class="idea-content">
+                            <h3>${idea.title}</h3>
+                            <p><strong>Industry:</strong> ${idea.industry}</p>
+                            <p><strong>Submitted:</strong> ${new Date(idea.createdAt).toLocaleDateString()}</p>
+                            <button onclick="openModal('${idea.title}', '${idea.description}', '${idea.expectedAmount}', '${idea.industry}', '${idea.email}', '${idea.phone}', '${idea.createdAt}')">View More</button>
+                        </div>
+                    `;
+                    ideasList.appendChild(ideaCard);
+                });
+            });
+        }
+
+        function openModal(title, description, expectedAmount, industry, email, phone, createdAt) {
+            document.getElementById("modalTitle").innerText = title;
+            document.getElementById("modalDescription").innerText = description;
+            document.getElementById("modalInvestment").innerText = expectedAmount;
+            document.getElementById("modalIndustry").innerText = industry;
+            document.getElementById("modalDate").innerText = new Date(createdAt).toLocaleDateString();
+            document.getElementById("modalEmail").href = `mailto:${email}`;
+            document.getElementById("modalWhatsApp").href = `https://wa.me/${phone}`;
+            document.getElementById("ideaModal").style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById("ideaModal").style.display = "none";
+        }
+
+        window.onload = fetchIdeas;
+    </script>
+</body>
+</html>

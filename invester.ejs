@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Investor Dashboard</title>
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <style>
+    .timeline-stage.done {
+      background-color: #e6ffe6;
+      border-left: 4px solid #2ecc71;
+      padding-left: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .timeline-stage.done .date {
+      color: #2ecc71;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header class="dashboard-header">
+    <h1>Investor Dashboard</h1>
+    <div class="header-actions">
+      <input type="text" id="searchInput" placeholder="Search ideas..." />
+      <div class="profile-wrapper">
+        <button id="profileBtn">Profile ⏟</button>
+        <div id="profileDropdown" class="dropdown hidden">
+          <button onclick="viewProfile()">View Profile</button>
+          <button onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="stats-bar">
+    <div class="stat-btn" onclick="filterByStatus('all')">Total Ideas: <span id="totalIdeas">0</span></div>
+    <div class="stat-btn" onclick="filterByStatus('approved')">Approved: <span id="approvedCount">0</span></div>
+    <div class="stat-btn" onclick="filterByStatus('funded')">Funded: <span id="fundedCount">0</span></div>
+    <div class="stat-btn" onclick="filterByStatus('completed')">Completed: <span id="completedCount">0</span></div>
+  </section>
+
+  <main id="ideaGrid" class="idea-grid grid-layout"></main>
+
+  <script>
+    const currentUser = <%- JSON.stringify(user) %>;
+    let ideaData = [];
+    let currentFilter = 'all';
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const profileBtn = document.getElementById("profileBtn");
+      const dropdown = document.getElementById("profileDropdown");
+      const searchInput = document.getElementById("searchInput");
+
+      profileBtn.onclick = () => dropdown.classList.toggle("hidden");
+      window.onclick = (e) => {
+        if (!e.target.closest(".profile-wrapper")) dropdown.classList.add("hidden");
+      };
+      searchInput.addEventListener("input", (e) => renderIdeas(e.target.value));
+
+      fetchIdeas();
+    });
+
+    async function fetchIdeas() {
+      try {
+        const res = await fetch("/api/ideas");
+        const ideas = await res.json();
+        ideaData = ideas.map(idea => ({
+          ...idea,
+          createdAt: new Date(idea.statusTimeline?.submitted || Date.now()),
+          statusTimeline: idea.statusTimeline || {}
+        }));
+        renderIdeas();
+      } catch (err) {
+        console.error("Failed to fetch ideas:", err);
+      }
+    }
+
+    function updateStats() {
+      document.getElementById("totalIdeas").innerText = ideaData.length;
+      document.getElementById("approvedCount").innerText = ideaData.filter(i => i.statusTimeline.approved).length;
+      document.getElementById("fundedCount").innerText = ideaData.filter(i => i.statusTimeline.thirdInstallment).length;
+      document.getElementById("completedCount").innerText = ideaData.filter(i => i.statusTimeline.completed).length;
+    }
+
+    function renderIdeas(filter = '') {
+      const container = document.getElementById("ideaGrid");
+      container.innerHTML = "";
+
+      const filteredIdeas = ideaData.filter(idea => {
+        const textMatch = idea.title.toLowerCase().includes(filter.toLowerCase()) ||
+                          idea.industry.toLowerCase().includes(filter.toLowerCase()) ||
+                          idea.email.toLowerCase().includes(filter.toLowerCase());
+        const statusMatch = currentFilter === 'all' ||
+                            (currentFilter === 'approved' && idea.statusTimeline.approved) ||
+                            (currentFilter === 'funded' && idea.statusTimeline.thirdInstallment) ||
+                            (currentFilter === 'completed' && idea.statusTimeline.completed);
+        return textMatch && statusMatch;
+      });
+
+      filteredIdeas.forEach((idea, index) => {
+        const card = document.createElement("div");
+        card.className = "idea-card";
+        card.innerHTML = `
+          <div class="summary">
+            <h3>${idea.title}</h3>
+            <p><strong>Industry:</strong> ${idea.industry}</p>
+            <p><strong>Expected:</strong> $${idea.expectedAmount}</p>
+            <p><strong>Submitted:</strong> ${new Date(idea.statusTimeline.submitted || idea.createdAt).toLocaleDateString()}</p>
+            <button onclick="toggleDetails(${index})">View Idea</button>
+          </div>
+          <div id="details-${index}" class="idea-details" style="display: none;">
+            <p><strong>Description:</strong> ${idea.description}</p>
+            <p><strong>Email:</strong> <a href="mailto:${idea.email}">${idea.email}</a></p>
+            <p><strong>Phone:</strong> <a href="https://wa.me/${idea.phone}" target="_blank">${idea.phone}</a></p>
+            <div class="timeline">${renderTimeline(idea)}</div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      // ✅ Apply saved local stages AFTER DOM has been populated
+      filteredIdeas.forEach(idea => {
+        applyStoredStages(idea._id);
+      });
+
+      updateStats();
+    }
+
+    window.toggleDetails = (index) => {
+      const details = document.getElementById(`details-${index}`);
+      details.style.display = details.style.display === "none" ? "block" : "none";
+    };
+
+    function renderTimeline(idea) {
+      const status = idea.statusTimeline;
+      const stages = [
+        { key: "submitted", label: "Idea Submitted" },
+        { key: "approved", label: "Fund Approved" },
+        { key: "firstInstallment", label: "1st Installment" },
+        { key: "secondInstallment", label: "2nd Installment" },
+        { key: "thirdInstallment", label: "3rd Installment" },
+        { key: "completed", label: "Project Completed" }
+      ];
+      return stages.map(stage => `
+        <div class="timeline-stage ${status[stage.key] ? 'done' : ''}" data-id="${idea._id}" data-key="${stage.key}">
+          <span>${stage.label}</span>
+          ${status[stage.key]
+            ? `<span class="date">${new Date(status[stage.key]).toLocaleDateString()}</span>`
+            : `<button onclick="markStage('${idea._id}', '${stage.key}')">Mark as Done</button>`}
+        </div>
+      `).join('');
+    }
+
+    window.markStage = async (ideaId, key) => {
+      try {
+        const res = await fetch(`/api/update-status/${ideaId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key })
+        });
+
+        const data = await res.json();
+        if (data.idea) {
+          const index = ideaData.findIndex(i => i._id === data.idea._id);
+          if (index !== -1) {
+            ideaData[index] = data.idea;
+            const stageSelector = `.timeline-stage[data-id='${ideaId}'][data-key='${key}']`;
+            const stageElement = document.querySelector(stageSelector);
+            if (stageElement) {
+              stageElement.classList.add("done");
+              stageElement.innerHTML = `
+                <span>${getStageLabel(key)}</span>
+                <span class="date">${new Date(data.idea.statusTimeline[key]).toLocaleDateString()}</span>
+              `;
+              saveStageToLocalStorage(ideaId, key);
+            }
+            updateStats();
+          }
+        }
+      } catch (err) {
+        console.error("Error marking stage:", err);
+      }
+    };
+
+    function saveStageToLocalStorage(ideaId, stageKey) {
+      const stored = JSON.parse(localStorage.getItem("markedStages")) || {};
+      if (!stored[ideaId]) stored[ideaId] = [];
+      if (!stored[ideaId].includes(stageKey)) stored[ideaId].push(stageKey);
+      localStorage.setItem("markedStages", JSON.stringify(stored));
+    }
+
+    function applyStoredStages(ideaId) {
+      const stored = JSON.parse(localStorage.getItem("markedStages")) || {};
+      const stages = stored[ideaId] || [];
+      stages.forEach(stageKey => {
+        const stageElement = document.querySelector(`.timeline-stage[data-id='${ideaId}'][data-key='${stageKey}']`);
+        if (stageElement && !stageElement.classList.contains('done')) {
+          stageElement.classList.add("done");
+          stageElement.innerHTML = `
+            <span>${getStageLabel(stageKey)}</span>
+            <span class="date">Saved Locally</span>
+          `;
+        }
+      });
+    }
+
+    function getStageLabel(key) {
+      const labels = {
+        submitted: "Idea Submitted",
+        approved: "Fund Approved",
+        firstInstallment: "1st Installment",
+        secondInstallment: "2nd Installment",
+        thirdInstallment: "3rd Installment",
+        completed: "Project Completed"
+      };
+      return labels[key] || key;
+    }
+
+    window.filterByStatus = (status) => {
+      currentFilter = status;
+      renderIdeas(document.getElementById("searchInput").value);
+    };
+
+    window.viewProfile = () => {
+      alert(`Name: ${currentUser.name || 'N/A'}\nEmail: ${currentUser.email || 'N/A'}\nRole: ${currentUser.role || 'N/A'}`);
+    };
+
+    window.logout = () => {
+      if (confirm("Are you sure you want to logout?")) {
+        fetch("/logout", { method: "POST" }).then(() => location.href = "/");
+      }
+    };
+  </script>
+</body>
+</html>
