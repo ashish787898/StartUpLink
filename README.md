@@ -41,6 +41,6 @@ npm start
 We welcome contributions! Feel free to fork the repo, create a pull request, or open an issue.
 
 📧 Contact
-Have questions or suggestions? Reach out at your-email@example.com
+Have questions or suggestions? Reach out at ashishkumar_verma@srmap.edu.in 
 
 🔗 Live Demo (if deployed)
