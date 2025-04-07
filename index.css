@@ -1,0 +1,225 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Background - Animated Gradient */
+body {
+    background: linear-gradient(135deg, #ff758c, #ff7eb3, #fd6585);
+    background-size: 400% 400%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+    overflow-y: auto; /* Enables vertical scrolling */
+    position: relative;
+}
+
+/* Animated Particle Effect */
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100%;
+    background: url('https://i.imgur.com/NJ8L8Mj.png');
+    animation: moveBackground 5s infinite linear;
+    opacity: 0.1;
+    z-index: -1;
+}
+
+@keyframes moveBackground {
+    from { transform: translateY(0); }
+    to { transform: translateY(-100px); }
+}
+
+/* Main Container */
+.container {
+    background: rgba(255, 255, 255, 0.25);
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 600px;
+    width: 90%;
+    backdrop-filter: blur(20px);
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+}
+
+.container:hover {
+    transform: translateY(-5px);
+}
+
+/* Input Fields & Buttons */
+input, textarea, button {
+    width: 100%;
+    padding: 12px;
+    margin: 12px 0;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    transition: 0.3s;
+}
+
+/* Input Fields */
+input, textarea {
+    background: rgba(255, 255, 255, 0.3);
+    color: #333;
+    outline: none;
+    border: 2px solid transparent;
+    transition: all 0.3s ease-in-out;
+}
+
+input::placeholder, textarea::placeholder {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+input:focus, textarea:focus {
+    border: 2px solid #4facfe;
+    background: rgba(255, 255, 255, 0.6);
+}
+
+/* Submit Button */
+button {
+    background: linear-gradient(135deg, #74a0c7, #00f2fe);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 0px 5px 15px rgba(79, 172, 254, 0.5);
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 5px 20px rgba(79, 172, 254, 0.8);
+}
+
+/* Ideas Grid - Adaptive Layout */
+.ideas-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 40px;
+    justify-content: center;
+    padding: 10px;
+}
+
+/* Idea Card - Proper Alignment */
+.idea-card {
+    background: rgba(255, 255, 255, 0.25);
+    padding: 20px;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 450px;
+    flex: 1;
+    min-width: 300px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+    text-align: center;
+}
+
+.idea-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Grid Behavior on Larger Screens */
+@media (min-width: 768px) {
+    .idea-card {
+        width: 48%;
+    }
+}
+
+/* Avatar */
+.avatar {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    border-radius: 50%;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    margin: auto;
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    z-index: 999;
+}
+
+/* Ensure the modal stays fixed at the center */
+.modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 500px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0px 10px 40px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(20px);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Smooth Modal Appearance */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -55%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+/* Close Button */
+.close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 30px;
+    cursor: pointer;
+    color: #333;
+}
+
+/* Contact Buttons */
+.contact-btn, .whatsapp-btn {
+    display: inline-block;
+    padding: 12px 18px;
+    margin: 10px;
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+.contact-btn {
+    background: #4facfe;
+}
+
+.whatsapp-btn {
+    background: #25D366;
+}
+
+.contact-btn:hover, .whatsapp-btn:hover {
+    transform: scale(1.08);
+}
