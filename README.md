@@ -10,7 +10,7 @@ Welcome to IdeaConnect, a platform where investors and idea submitters collabora
 ✅ Progress Reports & Inspections – Investors can monitor the development before approving each phase.
 
 🚀 Tech Stack
-Frontend: React.js + Vite
+Frontend: HTML + CSS + JS
 
 Backend: Node.js (Express.js)
 
