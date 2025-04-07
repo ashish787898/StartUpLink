@@ -1,4 +1,4 @@
-# StartUpLink
+![image](https://github.com/user-attachments/assets/6bfac209-2172-4f99-bc10-403ff3fdc5bf)# StartUpLink
 💡 IdeaConnect – Bridging Investors & Innovators 🚀
 Welcome to IdeaConnect, a platform where investors and idea submitters collaborate to bring groundbreaking ideas to life. Whether you're an entrepreneur looking for funding or an investor seeking the next big opportunity, IdeaConnect streamlines the entire process with phased funding, transparency, and progress-based disbursement.
 
@@ -42,5 +42,3 @@ We welcome contributions! Feel free to fork the repo, create a pull request, or 
 
 📧 Contact
 Have questions or suggestions? Reach out at ashishkumar_verma@srmap.edu.in 
-
-🔗 Live Demo (if deployed)
